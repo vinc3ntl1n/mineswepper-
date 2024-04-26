@@ -1,89 +1,11 @@
 #include "GameState.h"
-#include <fstream>
-#include <cstdlib>
-#include <ctime>
-
-GameState::GameState(sf::Vector2i _dimensions, int _numberOfMines)
-        : dimensions(_dimensions), numMines(_numberOfMines), playStatus(PLAYING) {
-    tiles.resize(dimensions.x, std::vector<std::shared_ptr<Tile>>(dimensions.y));
-    srand(static_cast<unsigned int>(time(nullptr)));
-    int placedMines = 0;
-    while (placedMines < numMines) {
-        int x = rand() % dimensions.x;
-        int y = rand() % dimensions.y;
-        if (!tiles[x][y]) {
-            tiles[x][y] = std::make_shared<mine>(sf::Vector2f(x * 32.0f, y * 32.0f));
-            placedMines++;
-        }
-    }
-    for (int x = 0; x < dimensions.x; x++) {
-        for (int y = 0; y < dimensions.y; y++) {
-            if (!tiles[x][y]) {
-                tiles[x][y] = std::make_shared<Tile>(sf::Vector2f(x * 32.0f, y * 32.0f));
-            }
-        }
-    }
-    setNeighbors();
-    calculateMineCounts();
-}
-
-void GameState::setNeighbors() {
-    for (int x = 0; x < dimensions.x; x++) {
-        for (int y = 0; y < dimensions.y; y++) {
-            std::array<std::shared_ptr<Tile>, 8> neighbors = {nullptr};
-            // Set neighbors as before but with shared pointers
-            // Neighbors assignment logic here...
-        }
-    }
-}
-
-void GameState::calculateMineCounts() {
-    for (int x = 0; x < dimensions.x; x++) {
-        for (int y = 0; y < dimensions.y; y++) {
-            if (!tiles[x][y]->isMine()) {
-                int count = 0;
-                // Count mines logic here...
-                tiles[x][y]->setNumMines(count);
-            }
-        }
-    }
-}
-
-GameState::GameState(const char* filepath) {
-    std::ifstream file(filepath);
-    std::vector<std::vector<char>> tempVec;
-    if (file.is_open()) {
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.find_first_not_of(" \t") != std::string::npos) {
-                std::vector<char> row(line.begin(), line.end());
-                tempVec.push_back(row);
-            }
-        }
-    }
-    file.close();
-    dimensions = sf::Vector2i(tempVec[0].size(), tempVec.size());
-    numMines = 0;
-    tiles.resize(dimensions.x, std::vector<std::shared_ptr<Tile>>(dimensions.y));
-    for (int y = 0; y < dimensions.y; y++) {
-        for (int x = 0; x < dimensions.x; x++) {
-            if (tempVec[y][x] == '1') {
-                tiles[x][y] = std::make_shared<mine>(sf::Vector2f(x * 32.0f, y * 32.0f));
-                numMines++;
-            } else {
-                tiles[x][y] = std::make_shared<Tile>(sf::Vector2f(x * 32.0f, y * 32.0f));
-            }
-        }
-    }
-    setNeighbors();
-    calculateMineCounts();
-}
-
-int GameState::getFlagCount() const {
+#include "string"
+using namespace std;
+int GameState::getFlagCount() {
     int flags = 0;
-    for (auto& row : tiles) {
-        for (auto& tile : row) {
-            if (tile->getState() == Tile::State::FLAGGED) {
+    for (int x = 0; x < dimensions.x; x++) {  // loops through tile vector for number of tiles with flagged state
+        for (int y = 0; y < dimensions.y; y++) {
+            if (tiles[x][y]->getState() == Tile::State::FLAGGED) {
                 flags++;
             }
         }
@@ -91,22 +13,174 @@ int GameState::getFlagCount() const {
     return flags;
 }
 
-int GameState::getMineCount() const {
-    return numMines;
+int GameState::getMineCount() {
+    return mineNum;
 }
 
-std::shared_ptr<Tile> GameState::getTile(int x, int y) const {
-    if (x >= 0 && x < dimensions.x && y >= 0 && y < dimensions.y) {
-        return tiles[x][y];
+Tile* GameState::getTile(int x, int y) {
+    return tiles[x][y];
+}
+
+GameState::PlayStatus GameState::getPlayStatus() {
+    return currstatus;
+}
+
+void GameState::setPlayStatus(GameState::PlayStatus _status) {
+    currstatus = _status;
+}
+
+sf::Vector2i GameState::getDimensions() {
+    return dimensions;
+}
+
+vector<vector<Tile*>> GameState::getTiles() {
+    return this->tiles;
+}
+GameState::GameState(sf::Vector2i _dimensions, int _numberOfMines) {
+    currstatus = PlayStatus::PLAYING;
+    dimensions = _dimensions;
+    mineNum = _numberOfMines;
+    tiles.resize(dimensions.x, vector<Tile*>(dimensions.y, nullptr));
+    srand(static_cast<unsigned int>(time(nullptr)));
+    int placedMines = 0;
+    while (placedMines < mineNum) {  // puts mine around the board
+        int x = rand() % dimensions.x;
+        int y = rand() % dimensions.y;
+        if (tiles[x][y] == nullptr) {
+            tiles[x][y] = new mine(sf::Vector2f(x * 32.0f, y * 32.0f));
+            placedMines++;
+        }
     }
-    return nullptr;
+    for (int x = 0; x < dimensions.x; x++) {  // makes the tiles after the mines to the blank ones
+        for (int y = 0; y < dimensions.y; y++) {
+            if (tiles[x][y] == nullptr) {
+                tiles[x][y] = new Tile(sf::Vector2f(x * 32.0f, y * 32.0f));
+            }
+        }
+    }
+    for (int x = 0; x < dimensions.x; x++) {  // sets  array
+        for (int y = 0; y < dimensions.y; y++) {
+            array<Tile*, 8> arr{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            if (x != 0 && y != 0) {
+                arr[0] = tiles[x-1][y-1];
+            }
+            if (y != 0) {
+                arr[1] = tiles[x][y-1];
+            }
+            if (x != dimensions.x - 1 && y != 0) {
+                arr[2] = tiles[x+1][y-1];
+            }
+            if (x != 0) {
+                arr[3] = tiles[x-1][y];
+            }
+            if (x != dimensions.x - 1) {
+                arr[4] = tiles[x+1][y];
+            }
+            if (x != 0 && y != dimensions.y - 1) {
+                arr[5] = tiles[x-1][y+1];
+            }
+            if (y != dimensions.y - 1) {
+                arr[6] = tiles[x][y+1];
+            }
+            if (x != dimensions.x - 1 && y != dimensions.y - 1) {
+                arr[7] = tiles[x+1][y+1];
+            }
+            tiles[x][y]->setNeighbors(arr);
+        }
+    }
+    for (int x = 0; x < dimensions.x; x++) {  // checks how many mines are next to a tile
+        for (int y = 0; y < dimensions.y; y++) {
+            if (tiles[x][y]->isMine()) {
+                continue;
+            }
+            int count = 0;
+            for (Tile* a : tiles[x][y]->getNeighbors()) {
+                if (a != nullptr && a->isMine()) {
+                    count++;
+                }
+            }
+            tiles[x][y]->setNumMines(count);
+        }
+    }
 }
 
-GameState::PlayStatus GameState::getPlayStatus() const {
-    return playStatus;
+GameState::GameState(const char *filepath) {
+    ifstream file(filepath);
+    vector<vector<char>> tempVec;
+    if (file.is_open()) {
+        string line;
+        while (getline(file, line)) {
+            if (line.find_first_not_of(" \t") != string::npos) {
+                vector<char> row(line.begin(), line.end());
+                tempVec.push_back(row);
+            }
+        }
+    }
+    else {
+        cerr << "Error" << endl;
+    }
+    file.close();
+    dimensions = sf::Vector2i(tempVec[0].size(), tempVec.size());
+    for (int x = 0; x < dimensions.y; x++) {//sees how many bombs are in a certain vector
+        for (int y = 0; y < dimensions.x; y++) {
+            if (tempVec[x][y] == '1') {
+                mineNum++;
+            }
+        }
+    }
+    tiles.resize(dimensions.x, vector<Tile*>(dimensions.y, nullptr));
+    for (int x = 0; x < dimensions.x; x++) {
+        for (int y = 0; y < dimensions.y; y++) {
+            if (tempVec[y][x] == '1') {
+                tiles[x][y] = new mine(sf::Vector2f(x * 32.0f, y * 32.0f));
+            }
+            else {
+                tiles[x][y] = new Tile(sf::Vector2f(x * 32.0f, y * 32.0f));
+            }
+        }
+    }
+    for (int x = 0; x < dimensions.x; x++) {
+        for (int y = 0; y < dimensions.y; y++) {
+            array<Tile*, 8> arr{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            if (x != 0 && y != 0) {
+                arr[0] = tiles[x-1][y-1];
+            }
+            if (y != 0) {
+                arr[1] = tiles[x][y-1];
+            }
+            if (x != dimensions.x - 1 && y != 0) {
+                arr[2] = tiles[x+1][y-1];
+            }
+            if (x != 0) {
+                arr[3] = tiles[x-1][y];
+            }
+            if (x != dimensions.x - 1) {
+                arr[4] = tiles[x+1][y];
+            }
+            if (x != 0 && y != dimensions.y - 1) {
+                arr[5] = tiles[x-1][y+1];
+            }
+            if (y != dimensions.y - 1) {
+                arr[6] = tiles[x][y+1];
+            }
+            if (x != dimensions.x - 1 && y != dimensions.y - 1) {
+                arr[7] = tiles[x+1][y+1];
+            }
+            tiles[x][y]->setNeighbors(arr);
+        }
+    }
+    for (int x = 0; x < dimensions.x; x++) {
+        for (int y = 0; y < dimensions.y; y++) {
+            if (tiles[x][y]->isMine()) {
+                continue;
+            }
+            int count = 0;
+            for (Tile* a : tiles[x][y]->getNeighbors()) {
+                if (a != nullptr && a->isMine()) {
+                    count++;
+                }
+            }
+            tiles[x][y]->setNumMines(count);
+        }
+    }
 }
-
-void GameState::setPlayStatus(PlayStatus _status) {
-    playStatus = _status;
-}
-

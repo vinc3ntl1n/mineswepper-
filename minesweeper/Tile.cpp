@@ -1,27 +1,30 @@
 #include "Tile.h"
 #include "Toolbox.h"
-#include <SFML/Graphics.hpp>
-#include <memory>
 
-Tile::Tile(sf::Vector2f position) : pos(position), minesNear(0), state(HIDDEN), isAMine(false) {}
+Tile::Tile(sf::Vector2f position) {
+    minesNear = 0;
+    state = State::HIDDEN;
+    pos = position;
+    isAMine = false;
+}
 
-sf::Vector2f Tile::getLocation() const {
+sf::Vector2f Tile::getLocation() {
     return pos;
 }
 
-Tile::State Tile::getState() const {
+Tile::State Tile::getState() {
     return state;
 }
 
-std::array<std::shared_ptr<Tile>, 8> Tile::getNeighbors() const {
+std::array<Tile*, 8>& Tile::getNeighbors() {
     return neighbors;
 }
 
-void Tile::setState(State _state) {
+void Tile::setState(Tile::State _state) {
     state = _state;
 }
 
-void Tile::setNeighbors(const std::array<std::shared_ptr<Tile>, 8>& _neighbors) {
+void Tile::setNeighbors(std::array<Tile *, 8> _neighbors) {
     neighbors = _neighbors;
 }
 
@@ -29,39 +32,48 @@ void Tile::onClickLeft() {
     if (getState() == HIDDEN) {
         revealNeighbors();
     }
-    setState(REVEALED);
+    state = State::REVEALED;
 }
 
 void Tile::onClickRight() {
-    if (state == HIDDEN) {
-        setState(FLAGGED);
-    } else if (state == FLAGGED) {
-        setState(HIDDEN);
+    if (state == State::HIDDEN) {
+        state = State::FLAGGED;
+    }
+    else if (state == State::FLAGGED) {
+        state = State::HIDDEN;
     }
 }
 
 void Tile::draw() {
     Toolbox &tool = Toolbox::getInstance();
     sf::RenderWindow &window = tool.window;
+    sf::Texture hidden;
+    sf::Texture revealed;
+    hidden.loadFromFile("images/tile_hidden.png");
+    revealed.loadFromFile("images/tile_revealed.png");
     sf::Sprite tileSprite;
-    tileSprite.setPosition(getLocation());
-    if (getState() == REVEALED) {
-        sf::Texture &revealed = tool.getTexture("revealed");
+    if (getState() == State::REVEALED) {
         tileSprite.setTexture(revealed);
+        tileSprite.setPosition(getLocation());
         window.draw(tileSprite);
         if (minesNear != 0) {
+            sf::Texture numberTexture;
             sf::Sprite numberSprite;
-            numberSprite.setTexture(tool.getTexture("number_" + std::to_string(minesNear)));
+            numberTexture.loadFromFile("images/number_" + std::to_string(minesNear) + ".png");
+            numberSprite.setTexture(numberTexture);
             numberSprite.setPosition(getLocation());
             window.draw(numberSprite);
         }
-    } else {
-        sf::Texture &hidden = tool.getTexture("hidden");
+    }
+    else {
         tileSprite.setTexture(hidden);
+        tileSprite.setPosition(getLocation());
         window.draw(tileSprite);
-        if (getState() == FLAGGED) {
+        if (getState() == State::FLAGGED) {
+            sf::Texture flagTexture;
             sf::Sprite flagSprite;
-            flagSprite.setTexture(tool.getTexture("flag"));
+            flagTexture.loadFromFile("images/flag.png");
+            flagSprite.setTexture(flagTexture);
             flagSprite.setPosition(getLocation());
             window.draw(flagSprite);
         }
@@ -69,19 +81,19 @@ void Tile::draw() {
 }
 
 void Tile::revealNeighbors() {
-    if (getState() == HIDDEN && !isMine()) {
+    if (getState() == HIDDEN) {
         setState(REVEALED);
         if (minesNear == 0) {
-            for (auto &neighbor : getNeighbors()) {
-                if (neighbor && neighbor->getState() == HIDDEN) {
-                    neighbor->revealNeighbors();
+            for (Tile *a: getNeighbors()) {
+                if (a != nullptr) {
+                    a->revealNeighbors();
                 }
             }
         }
     }
 }
 
-bool Tile::isMine() const {
+bool Tile::isMine() {
     return isAMine;
 }
 
@@ -93,6 +105,6 @@ void Tile::setNumMines(int number) {
     minesNear = number;
 }
 
-int Tile::getMinesNear() const {
+int Tile::getMinesNear() {
     return minesNear;
 }

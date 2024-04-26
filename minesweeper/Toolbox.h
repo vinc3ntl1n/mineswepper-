@@ -2,49 +2,44 @@
 #define MINESWEEPER_TOOLBOX_H
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include "GameState.h"
 #include "Button.h"
+#include "Tile.h"
 
 class GameState;
-class Button;
+class Tile;
 
 class Toolbox {
-public:
-    static Toolbox& getInstance();
-    ~Toolbox();
-
-    sf::Texture winButtonTexture;
-    sf::Texture debugButtonTexture;
-    sf::Texture newGameButtonTexture;
-    sf::Texture testButton1Texture;
-    sf::Texture testButton2Texture;
-    sf::Texture testButton3Texture;
-    sf::Texture lossButtonTexture;
-
-    sf::Sprite debugButtonSprite;
-    sf::Sprite newGameButtonSprite;
-    sf::Sprite testButton1Sprite;
-    sf::Sprite testButton2Sprite;
-    sf::Sprite testButton3Sprite;
-    sf::Sprite lossButtonSprite;
-    sf::Sprite winButtonSprite;
-
-    sf::RenderWindow window;
-    std::unique_ptr<GameState> gameState;
-    std::unique_ptr<Button> debugButton;
-    std::unique_ptr<Button> newGameButton;
-    std::unique_ptr<Button> testButton1;
-    std::unique_ptr<Button> testButton2;
-    std::unique_ptr<Button> testButton3;
-    std::unique_ptr<Button> lossButton;
-    std::unique_ptr<Button> winButton;
-    bool showBombs;
-
-private:
+    friend class GameState;
+    friend class Tile;
     Toolbox();
-    Toolbox(const Toolbox&) = delete;
-    void operator=(const Toolbox&) = delete;
+    ~Toolbox();
+public:
+    sf::Texture winnerface;
+    sf::Texture debug;
+    sf::Texture newGame;
+    sf::Texture testB1;
+    sf::Texture testB2;
+    sf::Texture testB3;
+    sf::Texture loserface;
+    sf::Sprite debugS;
+    sf::Sprite newGameS;
+    sf::Sprite testB1S;
+    sf::Sprite testB2S;
+    sf::Sprite testB3S;
+    sf::Sprite loserfaceS;
+    sf::Sprite winnerfaceS;
+    sf::RenderWindow window;
+    GameState* gameState;
+    Button* debugButton;
+    Button* newGameButton;
+    Button* tB1;
+    Button* tB2;
+    Button* tB3;
+    Button* lossButton;
+    Button* winButton;
+    bool showBombs;
+    static Toolbox& getInstance();
 };
 
-#endif // MINESWEEPER_TOOLBOX_H
+#endif //MINESWEEPER_TOOLBOX_H

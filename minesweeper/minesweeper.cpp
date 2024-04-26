@@ -17,6 +17,7 @@ int launch() {
             else if (event.type == sf::Event::MouseButtonPressed) {
                 int mouseX = event.mouseButton.x;
                 int mouseY = event.mouseButton.y;
+
                 if (mouseX >= (32.0f * dim.x) - 304.0f - 32.0f && mouseX <= (32.0f * dim.x) - 304.0f + 32.0f && mouseY >= 32.0f * (dim.y + 0.5f) && mouseY <= 32.0f * (dim.y + 0.5f) + 64.0f) {
                     std::cout << "debug" << std:: endl;
                     toggleDebugMode();
@@ -26,15 +27,15 @@ int launch() {
                     tools.newGameButton->onClick();
                 }
                 else if (mouseX >= (32.0f * dim.x) - 240.0f - 32.0f && mouseX <= (32.0f * dim.x) - 240.0f + 32.0f && mouseY >= 32.0f * (dim.y + 0.5f) && mouseY <= 32.0f * (dim.y + 0.5f) + 64.0f) {
-                    tools.testButton1->onClick();
+                    tools.tB1->onClick();
                     std::cout << "test 1" << std::endl;
                 }
                 else if (mouseX >= (32.0f * dim.x) - 176.0f - 32.0f && mouseX <= (32.0f * dim.x) - 176.0f + 32.0f && mouseY >= 32.0f * (dim.y + 0.5f) && mouseY <= 32.0f * (dim.y + 0.5f) + 64.0f) {
-                    tools.testButton2->onClick();
+                    tools.tB2->onClick();
                     std::cout << "test 2" << std::endl;
                 }
                 else if (mouseX >= (32.0f * dim.x) - 112.0f - 32.0f && mouseX <= (32.0f * dim.x) - 112.0f + 32.0f && mouseY >= 32.0f * (dim.y + 0.5f) && mouseY <= 32.0f * (dim.y + 0.5f) + 64.0f) {
-                    tools.testButton3->onClick();
+                    tools.tB3->onClick();
                     std::cout << "test 3" << std::endl;
                 }
                 else {
@@ -59,9 +60,10 @@ int launch() {
 }
 
 void restart() {
-    tools.gameState.reset(new GameState);
+    delete tools.gameState;
+    tools.gameState = new GameState;
     tools.gameState->setPlayStatus(GameState::PLAYING);
-    tools.newGameButton->setSprite(&tools.newGameButtonSprite);
+    tools.newGameButton->setSprite(&tools.newGameS);
 }
 
 void render() {
@@ -72,30 +74,30 @@ void render() {
     int revealedTiles = 0;
     sf::Texture digits;
     digits.loadFromFile("images/digits.png");
-    window.draw(*tools.debugButton->getSprite());
+    tools.window.draw(*tools.debugButton->getSprite());
     if (tools.gameState->getPlayStatus() == GameState::PLAYING) {
-        window.draw(*tools.newGameButton->getSprite());
+        tools.window.draw(*tools.newGameButton->getSprite());
     }
     else if (tools.gameState->getPlayStatus() == GameState::LOSS) {
-        window.draw(*tools.lossButton->getSprite());
+        tools.window.draw(*tools.lossButton->getSprite());
     }
     else if (tools.gameState->getPlayStatus() == GameState::WIN) {
-        window.draw(*tools.winButton->getSprite());
+        tools.window.draw(*tools.winButton->getSprite());
     }
 
-    window.draw(*tools.testButton1->getSprite());
-    window.draw(*tools.testButton2->getSprite());
-    window.draw(*tools.testButton3->getSprite());
-    for (int x = 0; x < tools.gameState->getTiles().size(); x++) {
-        for (int y = 0; y < tools.gameState->getTiles()[0].size(); y++) {
-            tools.gameState->getTile(x, y)->draw();
-            if (tools.gameState->getTile(x, y)->getState() == Tile::REVEALED) {
+    tools.window.draw(*tools.tB1->getSprite());
+    tools.window.draw(*tools.tB2->getSprite());
+    tools.window.draw(*tools.tB3->getSprite());
+    for (int i = 0; i < tools.gameState->getTiles().size(); i++) {
+        for (int j = 0; j < tools.gameState->getTiles()[0].size(); j++) {
+            tools.gameState->getTile(i, j)->draw();
+            if (tools.gameState->getTile(i, j)->getState() == Tile::REVEALED) {
                 revealedTiles++;
             }
         }
     }
     if (revealedTiles == totalTiles - tools.gameState->getMineCount()) {
-        tools.newGameButton->setSprite(&tools.winButtonSprite);
+        tools.newGameButton->setSprite(&tools.winnerfaceS);
         tools.gameState->setPlayStatus(GameState::WIN);
     }
     int digit1, digit2, digit3;
@@ -118,13 +120,13 @@ void render() {
     d3.setPosition(75, 32.0f * (dimensions.y + 0.5) + 16);
     negative.setPosition(33, 32.0f * (dimensions.y + 0.5) + 16);
     if (flagsPlaced < 0) {
-        window.draw(negative);
+        tools.window.draw(negative);
     }
     else {
-        window.draw(d1);
+        tools.window.draw(d1);
     }
-    window.draw(d2);
-    window.draw(d3);
+    tools.window.draw(d2);
+    tools.window.draw(d3);
 }
 
 void toggleDebugMode() {

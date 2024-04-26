@@ -2,11 +2,10 @@
 #define MINESWEEPER_MINE_H
 
 #include "Tile.h"
-#include "Toolbox.h"
 
 class mine : public Tile {
 public:
-    mine(sf::Vector2f _position);
+    explicit mine(sf::Vector2f _position);
     void draw() override;
     void onClickLeft() override;
 };

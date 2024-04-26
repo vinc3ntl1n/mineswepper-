@@ -3,7 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <array>
-#include <memory>
 
 class GameState;
 
@@ -11,18 +10,18 @@ class Tile {
 public:
     enum State { REVEALED, HIDDEN, FLAGGED, EXPLODED };
     Tile(sf::Vector2f position);
-    sf::Vector2f getLocation() const;
-    State getState() const;
-    std::array<std::shared_ptr<Tile>, 8> getNeighbors() const;
+    sf::Vector2f getLocation();
+    State getState();
+    std::array<Tile*, 8>& getNeighbors();
     void setState(State _state);
-    void setNeighbors(const std::array<std::shared_ptr<Tile>, 8>& _neighbors);
+    void setNeighbors(std::array<Tile*, 8> _neighbors);
     virtual void onClickLeft();
     void onClickRight();
     virtual void draw();
-    bool isMine() const;
+    bool isMine();
     void setMine(bool x);
     void setNumMines(int number);
-    int getMinesNear() const;
+    int getMinesNear();
 protected:
     void revealNeighbors();
 private:
@@ -30,7 +29,7 @@ private:
     bool isAMine;
     State state;
     sf::Vector2f pos;
-    std::array<std::shared_ptr<Tile>, 8> neighbors;
+    std::array<Tile*, 8> neighbors;
 };
 
-#endif // MINESWEEPER_TILE_H
+#endif //MINESWEEPER_TILE_H

@@ -20,9 +20,6 @@ add_executable(minesweeper
         mine.h
 )
 
-set(SFML_STATIC_LIBRARIES TRUE)
-set(SFML_DIR C:/SFML-2.5.1/lib/cmake/SFML)
-find_package(SFML COMPONENTS system window graphics audio network REQUIRED)
-
-include_directories(C:/Documents/Projects/Test/SFML/include/SFML)
-target_link_libraries(minesweeper sfml-system sfml-window sfml-graphics sfml-audio)
+target_link_libraries(minesweeper sfml-graphics sfml-audio)
+set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML")
+find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)

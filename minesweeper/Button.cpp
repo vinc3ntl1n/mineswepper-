@@ -1,22 +1,28 @@
 #include "Button.h"
+#include <utility>
 
-Button::Button(sf::Vector2f _position, std::function<void()> _onClick)
-        : position(_position), onClickFunction(_onClick), sprite(nullptr) {}
-
-sf::Vector2f Button::getPosition() const {
-    return position;
+void Button::setSprite(sf::Sprite* _sprite) {
+    if (_sprite) {
+        sprite = _sprite;
+        sf::FloatRect bounds = sprite->getLocalBounds();//sets the sprite to the appritoate sprite 
+        float w = bounds.width;
+        float x = pos.x - w / 2;
+        sprite->setPosition(x, pos.y);
+    }
 }
+sf::Vector2f Button::getPosition() const {
+    return pos;
+}
+Button::Button(sf::Vector2f _position, std::function<void()> _onClick)
+        : pos(_position), clickFunc(_onClick), sprite(nullptr) {}
 
-std::shared_ptr<sf::Sprite> Button::getSprite() const {
+sf::Sprite* Button::getSprite() const {
     return sprite;
 }
 
-void Button::setSprite(std::shared_ptr<sf::Sprite> _sprite) {
-    sprite = _sprite;
+void Button::onClick() const {
+    clickFunc();
 }
 
-void Button::onClick() {
-    if (onClickFunction) {
-        onClickFunction();
-    }
-}
+
+
